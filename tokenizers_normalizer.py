@@ -23,14 +23,6 @@ from nltk.corpus import wordnet
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.tokenize import RegexpTokenizer
 
-nltk.download('brown')
-nltk.download('punkt')
-nltk.download('wordnet')
-
-
-LEMMATIZER = WordNetLemmatizer()
-STEMMER = PorterStemmer()
-
 
 def read_json(path_base):
     """read json file
@@ -62,11 +54,12 @@ def read_stop_word(path_to_file):
     return content.splitlines()
 
 
-def lemmatizer(token, token_tag=None):
+def lemmatizer_fun(lemmatizer, token, token_tag=None):
     """lemmatize token with tag of token in sentence
     if token has not tag lemmatized With no tag method
 
     Arguments:
+        lemmatizer {obj} -- instance of WordNetLemmatizer
         token {str} -- token
 
     Keyword Arguments:
@@ -77,22 +70,23 @@ def lemmatizer(token, token_tag=None):
     """
 
     if token_tag is None:
-        return LEMMATIZER.lemmatize(token)
+        return lemmatizer.lemmatize(token)
 
-    return LEMMATIZER.lemmatize(token, pos=token_tag)
+    return lemmatizer.lemmatize(token, pos=token_tag)
 
 
-def stemmer(token):
+def stemmer_fun(stemmer, token):
     """stemming token by porter one algoritm
 
     Arguments:
+        stemmer {obj} -- instance of PorterStemmer
         token {str} -- token
 
     Returns:
         str -- stemmed token
     """
 
-    return STEMMER.stem(token)
+    return stemmer.stem(token)
 
 
 def get_wordnet_pos(treebank_tag):
@@ -190,13 +184,16 @@ def tokenizer(doc, ignore_keys):
     return list_of_token
 
 
-def normalization(list_token_tag_pos,
+def normalization(lemmatizer, stemmer,
+                  list_token_tag_pos,
                   bool_lemmatizing=True,
                   bool_stemming=False):
     """normalized each token in list of [token, tag, postion] which can be done
     by lemmatization and stemmation
 
     Arguments:
+        lemmatizer {obj} -- instance of WordNetLemmatizer
+        stemmer {obj} -- instance of PorterStemmer
         list_token_tag_pos {list} -- list contain token, tag, position
 
     Keyword Arguments:
@@ -215,12 +212,14 @@ def normalization(list_token_tag_pos,
         for token_tag_pos in list_token_tag_pos:
             if token_tag_pos[1] is not None:
                 # lemmatizing with token tag
-                lemmatized_tokens.append((lemmatizer(token_tag_pos[0],
-                                                     token_tag_pos[1]),
+                lemmatized_tokens.append((lemmatizer_fun(lemmatizer,
+                                                         token_tag_pos[0],
+                                                         token_tag_pos[1]),
                                           token_tag_pos[2]))
             else:
                 # lemmatizing without token tag
-                lemmatized_tokens.append((lemmatizer(token_tag_pos[0]),
+                lemmatized_tokens.append((lemmatizer_fun(lemmatizer,
+                                          token_tag_pos[0]),
                                           token_tag_pos[2]))
         list_result = lemmatized_tokens
         lemmatized_tokens = None
@@ -228,18 +227,21 @@ def normalization(list_token_tag_pos,
     if bool_stemming:
         stemmed_tokens = []
         for token_tag_pos in list_token_tag_pos:
-            stemmed_tokens.append((stemmer(token_tag_pos[0]), token_tag_pos[2]))
+            stemmed_tokens.append((stemmer_fun(stemmer, token_tag_pos[0]),
+                                  token_tag_pos[2]))
         list_result = stemmed_tokens
         stemmed_tokens = None
 
     return list_result
 
 
-def tokenizer_normalizer(file_name, list_stop_words):
+def tokenizer_normalizer(lemmatizer, stemmer, file_name, list_stop_words):
     """read json file stored by parser and tokenized and normalized them after
     this store each document dictionary in json by serial json writer
 
     Arguments:
+        lemmatizer {obj} -- instance of WordNetLemmatizer
+        stemmer {obj} -- instance of PorterStemmer
         file_name {str} -- path to json file which parser stored them
         list_stop_words {list} -- list of all stop words
     """
@@ -248,7 +250,7 @@ def tokenizer_normalizer(file_name, list_stop_words):
     base_address = 'data-files/json_data/cars/'
     conten = read_json(base_address+'parsed/'+file_name)
     # if directory does not exist make it
-    if os.path.isdir(base_address+'preprocessed/'):
+    if not os.path.isdir(base_address+'preprocessed/'):
         os.mkdir(base_address+'preprocessed/')
     address_write_preprocessed = base_address+'preprocessed/'+file_name
     # json sreial writer
@@ -261,7 +263,9 @@ def tokenizer_normalizer(file_name, list_stop_words):
             dic_doc_tokens = {
                 "doc_id": dic_document['docID'],
                 "root": file_name,
-                "list_of_token": normalization(token_tag_pos)
+                "list_of_token": normalization(lemmatizer,
+                                               stemmer,
+                                               token_tag_pos)
             }
             json_streamer.write(dic_doc_tokens)
 
@@ -274,12 +278,23 @@ def make_preprocessed_file():
     reload(sys)
     sys.setdefaultencoding('cp1252')
     stop_words = read_stop_word('data-files/stopwords.txt')
+    try:
+        nltk.data.find('corpora/brown')
+        nltk.data.find('tokenizers/punkt')
+        nltk.data.find('corpora/wordnet')
+    except LookupError:
+        nltk.download('brown')
+        nltk.download('punkt')
+        nltk.download('wordnet')
+    wordnet_lemmatizer = WordNetLemmatizer()
+    porter_stemmer = PorterStemmer()
     wordnet.ensure_loaded()
     list_thread = []
     for data_file in os.listdir('data-files/json_data/cars/parsed'):
         # for each json file run thread
         list_thread.append(Thread(target=tokenizer_normalizer,
-                                  args=(data_file, stop_words)))
+                                  args=(wordnet_lemmatizer, porter_stemmer,
+                                        data_file, stop_words)))
     for thread in list_thread:
         thread.start()
     for thread in list_thread:
