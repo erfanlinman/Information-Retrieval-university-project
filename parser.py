@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- encoding: utf8 -*-
 """parse xml file and convert them to json
+    __author__ = "Erfan Rahnemoon"
+    __version__ = "0.0.1"
+    __maintainer__ = "Erfan Rahnemoon"
+    __email__ = "erfan@rahnemoon.name"
 """
 import json
 import os
@@ -175,7 +179,7 @@ def files_to_json(dic_file_path, path_store_json):
 
 
 def parsing(base_source_path='data-files/cars',
-            base_result_path='data-files/json_data/cars'):
+            base_result_path='data-files/json_data/cars/parsed'):
     """get path to all file in data-set and run converter to json
 
     Keyword Arguments:
@@ -185,8 +189,8 @@ def parsing(base_source_path='data-files/cars',
         (default: {'data-files/json_data/cars'})
     """
 
-    if not os.path.isdir('data-files/json_data/cars'):
-        os.mkdir('data-files/json_data/cars')
+    if not os.path.isdir(base_result_path):
+        os.mkdir(base_result_path)
     dic_file = get_all_file_by_path(base_source_path)
     files_to_json(dic_file, base_result_path)
 
