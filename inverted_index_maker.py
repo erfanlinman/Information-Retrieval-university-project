@@ -38,18 +38,18 @@ def write_json(dic_content, file_name):
         writer.close()
 
 
-def make_inverted_index(address_preprocessed):
+def make_inverted_index(path_preproc='data-files/json_data/cars/preprocessed/'):
     """read preprocessed file which made by tokenizer_normalizer and make
     inverted index
 
     Arguments:
-        address_preprocessed {dictionary} -- inverted index
+        path_preproc {dictionary} -- inverted index
     """
 
     inverted_index = {}
     token_id = 0
-    for preprocessed_data in os.listdir(address_preprocessed):
-        list_docs_dic = read_json(address_preprocessed + preprocessed_data)
+    for preprocessed_data in os.listdir(path_preproc):
+        list_docs_dic = read_json(path_preproc + preprocessed_data)
         for dic_doc in list_docs_dic:
             doc_id = dic_doc['doc_id']
             list_of_tokens = dic_doc['list_of_token']
@@ -78,7 +78,7 @@ def make_inverted_index(address_preprocessed):
 
 
 def main():
-    make_inverted_index('data-files/json_data/cars/preprocessed/')
+    make_inverted_index()
 
 if __name__ == '__main__':
     main()
