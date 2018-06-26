@@ -17,11 +17,12 @@ import sys
 from threading import Thread
 
 import nltk
-from json_autoarray import JSONAutoArray
 from nltk import pos_tag
 from nltk.corpus import wordnet
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.tokenize import RegexpTokenizer
+
+from json_autoarray import JSONAutoArray
 
 
 def read_json(path_base):

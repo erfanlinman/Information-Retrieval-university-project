@@ -103,3 +103,6 @@ ENV/
 # self added
 .*
 !/.gitignore
+data-files/json_data
+data-files/inverted-index.json
+!data-files/cars

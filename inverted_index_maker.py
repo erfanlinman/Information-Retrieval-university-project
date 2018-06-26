@@ -59,7 +59,7 @@ def make_inverted_index(path_preproc='data-files/json_data/cars/preprocessed/'):
                     inverted_index[token] = {
                         'token_id': token_id,
                         'number_of_doc': 0,
-                        'frequncy_token': 0,
+                        'frequency_token': 0,
                         'posting_list': {}
                     }
                     token_id += 1
@@ -67,13 +67,13 @@ def make_inverted_index(path_preproc='data-files/json_data/cars/preprocessed/'):
                     inverted_index[token]['posting_list'][root_file] = {}
                 if doc_id not in inverted_index[token]['posting_list'][root_file]:
                     inverted_index[token]['posting_list'][root_file][doc_id] = {
-                        'number_of_frequncy': 0,
+                        'number_of_frequency': 0,
                         'list_pos': []
                     }
                     inverted_index[token]['number_of_doc'] += 1
                 inverted_index[token]['posting_list'][root_file][doc_id]['list_pos'].append(pos)
-                inverted_index[token]['posting_list'][root_file][doc_id]['number_of_frequncy'] += 1
-                inverted_index[token]['frequncy_token'] += 1
+                inverted_index[token]['posting_list'][root_file][doc_id]['number_of_frequency'] += 1
+                inverted_index[token]['frequency_token'] += 1
     write_json(inverted_index, 'inverted-index')
 
 
