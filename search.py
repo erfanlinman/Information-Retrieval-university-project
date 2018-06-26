@@ -19,8 +19,8 @@ import sys
 
 import ahocorasick
 import beautifultable
-import inverted_index_maker
 import spellchecker
+import inverted_index_maker
 import tokenizers_normalizer
 
 
