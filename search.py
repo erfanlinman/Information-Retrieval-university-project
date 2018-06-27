@@ -91,6 +91,20 @@ def make_inverted_index():
     inverted_index_maker.make_inverted_index()
 
 
+def read_inverted_index(inverted_index_path='data-files/inverted-index.json'):
+    """read inverted index file and return a dictionary of it
+
+    Keyword Arguments:
+        inverted_index_path {str} -- path to the inverted index file
+        (default: {'data-files/inverted-index.json'})
+
+    Returns:
+        dictionary -- dictionary of tokens and posting-lists
+    """
+
+    return read_json(inverted_index_path)
+
+
 def wild_card_search(tree, wild_card):
     """wildcard search in ahocorasick tree
 
@@ -162,21 +176,24 @@ def init():
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-    spell = spellchecker.SpellChecker(language=None,
-                                      local_dictionary='spell_checker/en.json.gz')
+
     if os.path.isfile('data-files/inverted-index.json'):
-        inverted_index = read_json('data-files/inverted-index.json')
-        list_tokens = inverted_index.keys()
-        spell.word_frequency.load_words(list_tokens)
-        wild_card_tree = make_wild_cart(list_tokens)
+        # if inverted index exist so just read it
+        inverted_index = read_inverted_index()
     else:
         # if make option not used before so make inverted index, next to other
         # thing
         print 'inverted index not available'
         print 'making inverted index'
         make_inverted_index()
+        inverted_index = read_inverted_index()
         print 'inverted index was made'
-
+    # make and configure spell checker and wildcard tree
+    list_tokens = inverted_index.keys()
+    spell = spellchecker.SpellChecker(language=None,
+                                      local_dictionary='spell_checker/en.json.gz')
+    spell.word_frequency.load_words(list_tokens)
+    wild_card_tree = make_wild_cart(list_tokens)
     return inverted_index, spell, wild_card_tree
 
 
@@ -204,19 +221,19 @@ def wild_card_option(input_token, wild_card_tree, inverted_index):
     # Exact length match => words, results
     doc_found, not_founds = wild_card_find_doc(inverted_index, exact)
     print 'Exact length match:\n{}\n'.format('\n'.join(exact))
-    print 'founded words:\n{}\n'.format(pprint.pformat(doc_found, indent=4))
+    print 'founded words:\n{}\n'.format(pprint.pformat(doc_found))
     print 'nothing found for:\n{}\n'.format('\n'.join(not_founds))
     print '{}'.format('#' * 70)
     # Most prefix match => words, results
     doc_found, not_founds = wild_card_find_doc(inverted_index, most)
     print 'Most prefix match:\n{}\n'.format('\n'.join(most))
-    print 'founded words:\n{}\n'.format(pprint.pformat(doc_found, indent=4))
+    print 'founded words:\n{}\n'.format(pprint.pformat(doc_found))
     print 'nothing found for:\n{}'.format('\n'.join(not_founds))
     print '{}'.format('#' * 70)
     # Least prefix match => words, results
     doc_found, not_founds = wild_card_find_doc(inverted_index, least)
     print 'Least prefix match:\n{}\n'.format('\n'.join(least))
-    print 'founded words:\n{}\n'.format(pprint.pformat(doc_found, indent=4))
+    print 'founded words:\n{}\n'.format(pprint.pformat(doc_found))
     print 'nothing found for:\n{}'.format('\n'.join(not_founds))
     print '{}'.format('#' * 70)
 
